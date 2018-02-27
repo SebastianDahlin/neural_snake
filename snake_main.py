@@ -18,12 +18,18 @@ X = 20
 Y = 20
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 2000
-# This is the geometry for the neural network. Keep first to 6, last to 2. Otherwise, experiment!
-topology = [6,12,2]
+max_point_goal = 3000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
-snake_neural.mutation_rate = 200
-
+snake_neural.mutation_rate = 25
+# Extended is for experimental purposes only
+snake_neural.extended = True
+## This is the geometry for the neural network: 
+# If extended is false keep first to 6, last to 2.
+# If extended is true keep first to 10, last to 2.
+if snake_neural.extended is True:   
+    topology = [10,2]
+else:
+    topology = [6,2]
 
 class Snake():
     def __init__(self, X, Y):
@@ -116,12 +122,13 @@ name_list = []
 #First inistantiation
 net_list = []
 run_no = 1
+local_max = 0
 max_point = 0
 for i in range(0,10):
     net_inst = snake_neural.Network(topology)
     net_list.append(net_inst)
 while True:
-    print("Run number %s" % (run_no))
+    print("Run number %s with local max: %s" % (run_no, local_max))
     for net in net_list:
         #print("Now running %s" % (net.name))
         do_again = True
@@ -129,6 +136,8 @@ while True:
         while do_again is True:
             render(snake, run_no)
             net.update_output(snake_neural.set_move(snake))
+            if max_point > max_point_goal:
+                print(snake_neural.set_move(snake))
             net.calculate_output(snake)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -166,7 +175,8 @@ while True:
     if max(history) > max_point:
         max_point = max(history)
         print(max_point)
-
+    # Get the local max
+    local_max = max(history)
     # Start printing more data if max_point_goal is reached
     if max_point > max_point_goal:
         for name, point in zip(name_list, history):
