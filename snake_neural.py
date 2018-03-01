@@ -62,7 +62,6 @@ def set_move(snake):
             move_list.append(0)
 
     #Also add suggestion moves to get the apple
-    sug_up, sug_down, sug_left, sug_right = 0,0,0,0
     sug_ver = 0
     sug_hor = 0
     sug_x = snake.apple[0] - snake_head[0]
