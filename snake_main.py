@@ -9,16 +9,17 @@ import string
 import time
 import snake_neural
 import copy
+import sys
 
 ### Inputs for the run
 # Set the tick number. Higher means faster snake.
 set_tick = 50
 # Screen size
-X = 20
-Y = 20
+X = 30
+Y = 30
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 4000
+max_point_goal =45000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
 # Extended is for experimental purposes only
@@ -27,7 +28,7 @@ snake_neural.extended = True
 # If extended is false keep first to 6, last to 2.
 # If extended is true keep first to 10, last to 2.
 if snake_neural.extended is True:   
-    topology = [8,6,4,2]
+    topology = [8,16,4,2]
 else:
     topology = [6,4,2]
 
@@ -69,7 +70,7 @@ class Snake():
     def check_apple(self):
         if self.apple == self.current:
             self.apple = self.get_apple_placement()
-            self.point += 50
+            self.point += 1000
             self.got_apple = True
             self.fitness_since_last_apple = 0
 
@@ -85,11 +86,11 @@ class Snake():
         else:
             return(True)      
 
-def render(snake, run_no):
+def render(snake, generation_no,run_no):
     if max_point > max_point_goal:
         SCREEN.fill((0, 0, 0))
         myfont = pygame.font.SysFont("monospace", 20)
-        label = myfont.render("Generation: " + str(run_no) + " Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
+        label = myfont.render("Generation: " + str(generation_no) + " Run no. " + str(run_no)+" Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
         SCREEN.blit(label, (20, 20))
         for i in range(0, X):
             for j in range(0, Y):
@@ -107,7 +108,7 @@ def render(snake, run_no):
     
 
 #Set the screen size
-screen_width = 800
+screen_width = 1200
 screen_height = 800
 
 #Main program
@@ -122,6 +123,7 @@ history = []
 name_list = []
 #First inistantiation
 net_list = []
+generation_no = 1
 run_no = 1
 local_max = 0
 max_point = 0
@@ -129,13 +131,13 @@ for i in range(0,10):
     net_inst = snake_neural.Network(topology)
     net_list.append(net_inst)
 while True:
-    print("Run number %s with local max: %s" % (run_no, local_max))
+    print("Generation %s with local max: %s" % (generation_no, local_max))
     for net in net_list:
         #print("Now running %s" % (net.name))
         do_again = True
         snake = Snake(X, Y)
         while do_again is True:
-            render(snake, run_no)
+            render(snake, generation_no, run_no)
             net.update_output(snake_neural.set_move(snake))
             if max_point > max_point_goal:
                 print(snake_neural.set_move(snake))
@@ -169,7 +171,7 @@ while True:
                 clock.tick(set_tick)
         history.append(net.fitness)
         name_list.append(net.name)
-
+        run_no += 1
         if max_point > max_point_goal:
             print("died")
 
@@ -238,10 +240,10 @@ while True:
     rand_net2 = snake_neural.Network(topology)
     rand_net2.cross_over(c12, c12,run_no)
 
-    # Also include a copy of the winner three times
-    c17 = copy.copy(net_list[0])
-    c18 = copy.copy(net_list[0])
-    c19 = copy.copy(net_list[0])
+    # Also include a copy of the three winners once again
+    # c17 = copy.copy(net_list[0])
+    # c18 = copy.copy(net_list[1])
+    # c19 = copy.copy(net_list[2])
     
     #append all new nets
     net_list.append(top_cross)
@@ -254,12 +256,13 @@ while True:
     net_list.append(c14)
     net_list.append(c15)
     net_list.append(c16)
-    net_list.append(c17)
-    net_list.append(c18)
-    net_list.append(c19)
+    # net_list.append(c17)
+    # net_list.append(c18)
+    # net_list.append(c19)
 
     #Update the run number and clear history and name list
-    run_no += 1
+    generation_no += 1
+    run_no = 0
     history = []
     name_list = []
 

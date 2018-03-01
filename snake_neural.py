@@ -4,7 +4,6 @@ import random
 import string
 from operator import add
 
-random.seed
 
 mutation_rate = 25
 extended = False
@@ -109,6 +108,7 @@ class Neuron():
 
 class Network():
     def __init__(self, typology): # Initiate the network with chosen typology
+        #random.seed()
         self.name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(5)])
         self.fitness = 0
         self.layers = [] # Holds neuron objects for each layer
@@ -139,6 +139,7 @@ class Network():
                 for dDrons in neuron.dendrons:
                     neuron.output += self.layers[lay_inst][inst].output * dDrons.weight
                     inst += 1
+                    # print("["+str(lay_inst)+","+str(inst)+" "+str(neuron.output)+"]")
             lay_inst += 1
 
     def calculate_output(self,snake):
