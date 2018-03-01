@@ -18,18 +18,19 @@ X = 20
 Y = 20
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 3000
+max_point_goal = 4000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
-snake_neural.mutation_rate = 25
+snake_neural.mutation_rate = 500
 # Extended is for experimental purposes only
 snake_neural.extended = True
 ## This is the geometry for the neural network: 
 # If extended is false keep first to 6, last to 2.
 # If extended is true keep first to 10, last to 2.
 if snake_neural.extended is True:   
-    topology = [10,2]
+    topology = [8,6,4,2]
 else:
-    topology = [6,2]
+    topology = [6,4,2]
+
 
 class Snake():
     def __init__(self, X, Y):
@@ -88,7 +89,7 @@ def render(snake, run_no):
     if max_point > max_point_goal:
         SCREEN.fill((0, 0, 0))
         myfont = pygame.font.SysFont("monospace", 20)
-        label = myfont.render("Run number:  " + str(run_no) + "  Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
+        label = myfont.render("Generation: " + str(run_no) + " Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
         SCREEN.blit(label, (20, 20))
         for i in range(0, X):
             for j in range(0, Y):
@@ -168,6 +169,7 @@ while True:
                 clock.tick(set_tick)
         history.append(net.fitness)
         name_list.append(net.name)
+
         if max_point > max_point_goal:
             print("died")
 
@@ -236,6 +238,11 @@ while True:
     rand_net2 = snake_neural.Network(topology)
     rand_net2.cross_over(c12, c12,run_no)
 
+    # Also include a copy of the winner three times
+    c17 = copy.copy(net_list[0])
+    c18 = copy.copy(net_list[0])
+    c19 = copy.copy(net_list[0])
+    
     #append all new nets
     net_list.append(top_cross)
     net_list.append(rand_cross1)
@@ -247,6 +254,9 @@ while True:
     net_list.append(c14)
     net_list.append(c15)
     net_list.append(c16)
+    net_list.append(c17)
+    net_list.append(c18)
+    net_list.append(c19)
 
     #Update the run number and clear history and name list
     run_no += 1

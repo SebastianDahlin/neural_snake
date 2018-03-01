@@ -4,6 +4,8 @@ import random
 import string
 from operator import add
 
+random.seed
+
 mutation_rate = 25
 extended = False
 
@@ -14,65 +16,49 @@ def set_move(snake):
     #check for obstacles
         if snake_head[1]-1 == -1 or [snake_head[0], snake_head[1]-1] in snake.whole and snake.move != [0, 1]: #Up
             move_list.append(1)
-
         else:
             move_list.append(0)
         if snake_head[1]+1 == snake.Y or [snake_head[0], snake_head[1]+1] in snake.whole and snake.move != [0, -1]: #Down
             move_list.append(1)
-
         else:
             move_list.append(0)
         if snake_head[0]-1 == -1 or [snake_head[0]-1, snake_head[1]] in snake.whole and snake.move != [1, 0]: #Left
             move_list.append(1)
-
         else:
             move_list.append(0)
         if snake_head[0]+1 == snake.X or [snake_head[0]+1, snake_head[1]] in snake.whole and snake.move != [-1, 0]: #Right
             move_list.append(1)
-
         else:
             move_list.append(0)
     else:
         #check for walls
         if snake_head[1]-1 == -1 and snake.move != [0, 1]: #Up
             move_list.append(1)
-
-        else:
-            move_list.append(0)
-        if snake_head[1]+1 == snake.Y and snake.move != [0, -1]: #Down
-            move_list.append(1)
-
+        elif snake_head[1]+1 == snake.Y and snake.move != [0, -1]: #Down
+            move_list.append(-1)
         else:
             move_list.append(0)
         if snake_head[0]-1 == -1 and snake.move != [1, 0]: #Left
             move_list.append(1)
-
-        else:
-            move_list.append(0)
-        if snake_head[0]+1 == snake.X and snake.move != [-1, 0]: #Right
-            move_list.append(1)
-
+        elif snake_head[0]+1 == snake.X and snake.move != [-1, 0]: #Right
+            move_list.append(-1)
         else:
             move_list.append(0)
         #check for own snake body
         if [snake_head[0], snake_head[1]-1] in snake.whole and snake.move != [0, 1]: #Up
             move_list.append(1)
-
         else:
             move_list.append(0)
         if [snake_head[0], snake_head[1]+1] in snake.whole and snake.move != [0, -1]: #Down
             move_list.append(1)
-
         else:
             move_list.append(0)
         if [snake_head[0]-1, snake_head[1]] in snake.whole and snake.move != [1, 0]: #Left
             move_list.append(1)
-
         else:
             move_list.append(0)
         if [snake_head[0]+1, snake_head[1]] in snake.whole and snake.move != [-1, 0]: #Right
             move_list.append(1)
-
         else:
             move_list.append(0)
 
