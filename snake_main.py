@@ -15,11 +15,11 @@ import sys
 # Set the tick number. Higher means faster snake.
 set_tick = 50
 # Screen size
-X = 30
-Y = 30
+X = 20
+Y = 20
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal =45000
+max_point_goal = 40000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
 # Extended is for experimental purposes only
@@ -31,7 +31,6 @@ if snake_neural.extended is True:
     topology = [8,16,4,2]
 else:
     topology = [6,4,2]
-
 
 class Snake():
     def __init__(self, X, Y):
@@ -90,7 +89,7 @@ def render(snake, generation_no,run_no):
     if max_point > max_point_goal:
         SCREEN.fill((0, 0, 0))
         myfont = pygame.font.SysFont("monospace", 20)
-        label = myfont.render("Generation: " + str(generation_no) + " Run no. " + str(run_no)+" Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
+        label = myfont.render("Generation: " + str(generation_no) + " Run no." + str(run_no)+" Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
         SCREEN.blit(label, (20, 20))
         for i in range(0, X):
             for j in range(0, Y):
@@ -106,9 +105,8 @@ def render(snake, generation_no,run_no):
     else:
         pass
     
-
 #Set the screen size
-screen_width = 1200
+screen_width = 1000
 screen_height = 800
 
 #Main program
@@ -127,11 +125,13 @@ generation_no = 1
 run_no = 1
 local_max = 0
 max_point = 0
+average_list = []
+average_score = 0
 for i in range(0,10):
     net_inst = snake_neural.Network(topology)
     net_list.append(net_inst)
 while True:
-    print("Generation %s with local max: %s" % (generation_no, local_max))
+    print("Generation %s with local max %s and average last ten %s." % (generation_no, local_max,average_score))
     for net in net_list:
         #print("Now running %s" % (net.name))
         do_again = True
@@ -181,6 +181,12 @@ while True:
         print(max_point)
     # Get the local max
     local_max = max(history)
+    # Add the local max to the average list and calculate average
+    average_list.insert(0, local_max)
+    if len(average_list) == 11:
+        average_list = average_list[0:10]
+    average_score = sum(average_list)/len(average_list)
+        
     # Start printing more data if max_point_goal is reached
     if max_point > max_point_goal:
         for name, point in zip(name_list, history):
