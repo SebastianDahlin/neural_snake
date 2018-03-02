@@ -11,26 +11,21 @@ import snake_neural
 import copy
 import sys
 
-### Inputs for the run
+###--- Inputs for the run ---###
 # Set the tick number. Higher means faster snake.
-set_tick = 50
+set_tick = 100
 # Screen size
 X = 20
 Y = 20
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 40000
+max_point_goal = 30000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
-# Extended is for experimental purposes only
-snake_neural.extended = True
 ## This is the geometry for the neural network: 
-# If extended is false keep first to 6, last to 2.
-# If extended is true keep first to 10, last to 2.
-if snake_neural.extended is True:   
-    topology = [8,16,4,2]
-else:
-    topology = [6,4,2]
+# Keep first number to 8, last to 2. Otherwise, experiment!
+topology = [8,16,4,2]
+###---Input End---###
 
 class Snake():
     def __init__(self, X, Y):
@@ -147,7 +142,6 @@ while True:
                     #Escape will quit the program
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
-                        sys.exit()
             # #manual input
             # for event in pygame.event.get():
             #     if event.type == pygame.QUIT:
