@@ -12,19 +12,23 @@ import copy
 import sys
 
 ###--- Inputs for the run ---###
+#Set the screen size
+screen_width = 800
+screen_height = 800
 # Set the tick number. Higher means faster snake.
-set_tick = 100
+set_tick = 30
 # Screen size
 X = 20
 Y = 20
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 30000
+max_point_goal = 50000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
 ## This is the geometry for the neural network: 
 # Keep first number to 8, last to 2. Otherwise, experiment!
-topology = [8,16,4,2]
+topology = [8,20,10,2]
+
 ###---Input End---###
 
 class Snake():
@@ -99,10 +103,6 @@ def render(snake, generation_no,run_no):
         pygame.display.flip()
     else:
         pass
-    
-#Set the screen size
-screen_width = 1000
-screen_height = 800
 
 #Main program
 pygame.init()
@@ -122,6 +122,7 @@ local_max = 0
 max_point = 0
 average_list = []
 average_score = 0
+populations = [] # TODO: Create four populations with ten nets in each. Let each population run for a couple of times and then perform cross-population
 for i in range(0,10):
     net_inst = snake_neural.Network(topology)
     net_list.append(net_inst)

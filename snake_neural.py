@@ -96,9 +96,11 @@ class Neuron():
     def __init__(self, layer):
         self.dendrons = [] # List to hold all ingoing connections to the neuron
         self.output = 0.0 # Used to sum the input * the sigmoid
+        self.bias = 0.0
         if layer is None: # If the neuron is in the first layer, it will have no connections to former layer
             pass
         else:
+            self.bias = random.uniform(-1,1)
             for neuron in layer: # Only for neurons not in the first layer
                 con = Connection(neuron) 
                 self.dendrons.append(con)
@@ -131,19 +133,19 @@ class Network():
         lay_inst = 0
         for layer in layers:
             for neuron in layer:
-                neuron.output = 0.0
+                neuron.output = neuron.bias
                 inst = 0
                 for dDrons in neuron.dendrons:
                     neuron.output += self.layers[lay_inst][inst].output * dDrons.weight
                     inst += 1
                     # print("["+str(lay_inst)+","+str(inst)+" "+str(neuron.output)+"]")
+                neuron.output = 2.0/(1.0+np.exp(-2*neuron.output)) -1
             lay_inst += 1
 
     def calculate_output(self,snake):
         # Calculating X and Y
         x_sum = self.layers[-1][0].output
         y_sum = self.layers[-1][1].output
-
         if abs(x_sum) > abs(y_sum):
             if abs(x_sum) > 0.5:
                 #print("moving x: %s" %(x_sum))
@@ -158,6 +160,7 @@ class Network():
                     snake.move = [0,1]
                 if y_sum < 0 and snake.move != [0, 1]:
                     snake.move = [0,-1]
+
 
     def cross_over(self,net1, net2, round_nr):
         # Iterate layers of both nets
