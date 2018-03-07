@@ -10,58 +10,71 @@ mutation_rate = 25
 def set_move(snake):
     snake_head = snake.whole[0]
     move_list = []
-    # if extended is False:
+    # Old way of doing it:
     # #check for obstacles
-    #     if snake_head[1]-1 == -1 or [snake_head[0], snake_head[1]-1] in snake.whole and snake.move != [0, 1]: #Up
-    #         move_list.append(1)
-    #     else:
-    #         move_list.append(0)
-    #     if snake_head[1]+1 == snake.Y or [snake_head[0], snake_head[1]+1] in snake.whole and snake.move != [0, -1]: #Down
-    #         move_list.append(1)
-    #     else:
-    #         move_list.append(0)
-    #     if snake_head[0]-1 == -1 or [snake_head[0]-1, snake_head[1]] in snake.whole and snake.move != [1, 0]: #Left
-    #         move_list.append(1)
-    #     else:
-    #         move_list.append(0)
-    #     if snake_head[0]+1 == snake.X or [snake_head[0]+1, snake_head[1]] in snake.whole and snake.move != [-1, 0]: #Right
-    #         move_list.append(1)
-    #     else:
-    #         move_list.append(0)
-        # check for walls
-    if snake_head[1]-1 == -1 and snake.move != [0, 1]: #Up
-        move_list.append(1)
-    elif snake_head[1]+1 == snake.Y and snake.move != [0, -1]: #Down
-        move_list.append(-1)
-    else:
-        move_list.append(0)
-    if snake_head[0]-1 == -1 and snake.move != [1, 0]: #Left
-        move_list.append(1)
-    elif snake_head[0]+1 == snake.X and snake.move != [-1, 0]: #Right
-        move_list.append(-1)
-    else:
-        move_list.append(0)
-    # check for own snake body
-    if [snake_head[0], snake_head[1]-1] in snake.whole and snake.move != [0, 1]: #Up
+    if snake_head[1]-1 == -1 or [snake_head[0], snake_head[1]-1] in snake.whole and snake.move != [0, 1]: #Up
         move_list.append(1)
     else:
         move_list.append(0)
-    if [snake_head[0], snake_head[1]+1] in snake.whole and snake.move != [0, -1]: #Down
+    if snake_head[1]+1 == snake.Y or [snake_head[0], snake_head[1]+1] in snake.whole and snake.move != [0, -1]: #Down
         move_list.append(1)
     else:
         move_list.append(0)
-    if [snake_head[0]-1, snake_head[1]] in snake.whole and snake.move != [1, 0]: #Left
+    if snake_head[0]-1 == -1 or [snake_head[0]-1, snake_head[1]] in snake.whole and snake.move != [1, 0]: #Left
         move_list.append(1)
     else:
         move_list.append(0)
-    if [snake_head[0]+1, snake_head[1]] in snake.whole and snake.move != [-1, 0]: #Right
+    if snake_head[0]+1 == snake.X or [snake_head[0]+1, snake_head[1]] in snake.whole and snake.move != [-1, 0]: #Right
         move_list.append(1)
     else:
         move_list.append(0)
+    
+    # New way of doing it
+    # check for walls
+    # if snake_head[1]-1 == -1 and snake.move != [0, 1]: #Up
+    #     move_list.append(1)
+    # elif snake_head[1]+1 == snake.Y and snake.move != [0, -1]: #Down
+    #     move_list.append(-1)
+    # else:
+    #     move_list.append(0)
+    # if snake_head[0]-1 == -1 and snake.move != [1, 0]: #Left
+    #     move_list.append(1)
+    # elif snake_head[0]+1 == snake.X and snake.move != [-1, 0]: #Right
+    #     move_list.append(-1)
+    # else:
+    #     move_list.append(0)
+    # # check for own snake body
+    # if [snake_head[0], snake_head[1]-1] in snake.whole and snake.move != [0, 1]: #Up
+    #     move_list.append(1)
+    # else:
+    #     move_list.append(0)
+    # if [snake_head[0], snake_head[1]+1] in snake.whole and snake.move != [0, -1]: #Down
+    #     move_list.append(1)
+    # else:
+    #     move_list.append(0)
+    # if [snake_head[0]-1, snake_head[1]] in snake.whole and snake.move != [1, 0]: #Left
+    #     move_list.append(1)
+    # else:
+    #     move_list.append(0)
+    # if [snake_head[0]+1, snake_head[1]] in snake.whole and snake.move != [-1, 0]: #Right
+    #     move_list.append(1)
+    # else:
+    #     move_list.append(0)
+
+    # New new
+    #Looking at the whole play grid
+    # for i in range(0, snake.X):
+    #     for j in range(0, snake.Y):
+    #         if [i,j] in snake.whole:
+    #             move_list.append(1)
+    #         else:
+    #             move_list.append(0)
+
 
     #Also add suggestion moves to get the apple
-    sug_ver = 0
-    sug_hor = 0
+    # New way
+    sug_ver, sug_hor = 0, 0
+    sug_right, sug_left, sug_down, sug_up = 0,0,0,0
     sug_x = snake.apple[0] - snake_head[0]
     if sug_x > 0:
         sug_right = 1
@@ -76,9 +89,8 @@ def set_move(snake):
     elif sug_y < 0:
         sug_up = 1
         sug_ver = -1
-    #move_list.extend((sug_up,sug_down,sug_left,sug_right))
-    move_list.extend((sug_hor,sug_ver))
-    #print(move_list)
+    move_list.extend((sug_up,sug_down,sug_left,sug_right))
+    #move_list.extend((sug_hor,sug_ver))
     return(move_list)
 
 
@@ -93,14 +105,14 @@ class Connection:
 
 
 class Neuron():
-    def __init__(self, layer):
+    def __init__(self, layer,typology):
         self.dendrons = [] # List to hold all ingoing connections to the neuron
         self.output = 0.0 # Used to sum the input * the sigmoid
         self.bias = 0.0
         if layer is None: # If the neuron is in the first layer, it will have no connections to former layer
             pass
         else:
-            self.bias = random.uniform(-1,1)
+            #self.bias = random.uniform(-3,3)
             for neuron in layer: # Only for neurons not in the first layer
                 con = Connection(neuron) 
                 self.dendrons.append(con)
@@ -110,14 +122,15 @@ class Network():
         #random.seed()
         self.name = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(5)])
         self.fitness = 0
+        self.fitness_history = []
         self.layers = [] # Holds neuron objects for each layer
         for neurons in typology: # Neurons equals number of neurons in each layer
             layer = [] # A list to hold all generated neuron objects
             for i in range(neurons): # Loop for each neuron in neurons
                 if (len(self.layers)==0): # Check if this is the first layer column in the network
-                    layer.append(Neuron(None)) # If it is the first, add a "None" neuron.
+                    layer.append(Neuron(None,typology)) # If it is the first, add a "None" neuron.
                 else: # If neuron is not in the first layer
-                    layer.append(Neuron(self.layers[-1])) # Send the amount of neurons in the prior layer into the connection creation class
+                    layer.append(Neuron(self.layers[-1],typology)) # Send the amount of neurons in the prior layer into the connection creation class
             self.layers.append(layer) # Append all new neurons, containing all connections to the netoworks layer in question
     
     def new_name(self):
@@ -139,7 +152,8 @@ class Network():
                     neuron.output += self.layers[lay_inst][inst].output * dDrons.weight
                     inst += 1
                     # print("["+str(lay_inst)+","+str(inst)+" "+str(neuron.output)+"]")
-                neuron.output = 2.0/(1.0+np.exp(-2*neuron.output)) -1
+                #neuron.output = 1.0/(1.0+np.exp(-neuron.output))
+                #print(neuron.output)
             lay_inst += 1
 
     def calculate_output(self,snake):

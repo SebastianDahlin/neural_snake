@@ -11,23 +11,24 @@ import snake_neural
 import copy
 import sys
 
+
 ###--- Inputs for the run ---###
 #Set the screen size
-screen_width = 800
+screen_width = 1000
 screen_height = 800
 # Set the tick number. Higher means faster snake.
 set_tick = 30
 # Screen size
-X = 20
-Y = 20
+X = 30
+Y = 30
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 50000
+max_point_goal = 40000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
 ## This is the geometry for the neural network: 
 # Keep first number to 8, last to 2. Otherwise, experiment!
-topology = [8,20,10,2]
+topology = [8,16,2]
 
 ###---Input End---###
 
@@ -38,10 +39,10 @@ class Snake():
         self.point = 0
         self.move = [1,0]
         self.last = [3,4]
-        self.current = [4, 4]
+        self.current = [4,4]
         self.whole = [[4,4],[3,4],[2,4]]
         self.got_apple = False
-        self.apple = self.get_apple_placement()
+        self.apple = [3,5] #self.get_apple_placement() 
         self.fitness = 0
         self.fitness_since_last_apple = 0
 
@@ -90,16 +91,15 @@ def render(snake, generation_no,run_no):
         myfont = pygame.font.SysFont("monospace", 20)
         label = myfont.render("Generation: " + str(generation_no) + " Run no." + str(run_no)+" Points: "+str(snake.point) +" Fitness: " +str(snake.fitness) +"  FSLA:  " + str(snake.fitness_since_last_apple), 1, (255,255,0))
         SCREEN.blit(label, (20, 20))
+        #Draw apple
+        pygame.draw.rect(SCREEN, (255, 0, 0),(100+snake.apple[0]*30, 100+snake.apple[1]*20, 30, 20))
         for i in range(0, X):
             for j in range(0, Y):
-                #Draw apple
-                pygame.draw.rect(SCREEN, (255, 0, 0),(100+snake.apple[0]*30, 100+snake.apple[1]*20, 30, 20))
                 #Draw grid
                 pygame.draw.rect(SCREEN, (255, 255, 255),(100+i*30, 100+j*20, 30, 20),1)
                 #Draw snake
-                for item in snake.whole:
-                    if item == [i,j]:
-                        pygame.draw.rect(SCREEN, (255, 255, 255),(100+i*30, 100+j*20, 30, 20))
+                if [i,j] in snake.whole:
+                    pygame.draw.rect(SCREEN, (255, 255, 255),(100+i*30, 100+j*20, 30, 20))
         pygame.display.flip()
     else:
         pass
@@ -127,7 +127,7 @@ for i in range(0,10):
     net_inst = snake_neural.Network(topology)
     net_list.append(net_inst)
 while True:
-    print("Generation %s with local max %s and average last ten %s." % (generation_no, local_max,average_score))
+    print("Generation %s with local max %s and average last ten %s." % (generation_no, round(local_max,2),round(average_score,2)))
     for net in net_list:
         #print("Now running %s" % (net.name))
         do_again = True
@@ -160,11 +160,14 @@ while True:
             #         snake.move = [0,1]
             snake.iterate()
             net.fitness = snake.fitness + snake.point
+            net.fitness_history.insert(0,net.fitness)
+            if len(net.fitness_history) > 3:
+                net.fitness_history = net.fitness_history[0:3]
             snake.check_apple()
             do_again = snake.check_game_over()
             if max_point > max_point_goal:
                 clock.tick(set_tick)
-        history.append(net.fitness)
+        history.append(sum(net.fitness_history)/len(net.fitness_history))
         name_list.append(net.name)
         run_no += 1
         if max_point > max_point_goal:
@@ -240,11 +243,6 @@ while True:
     rand_net1.cross_over(c11, c11,run_no)
     rand_net2 = snake_neural.Network(topology)
     rand_net2.cross_over(c12, c12,run_no)
-
-    # Also include a copy of the three winners once again
-    # c17 = copy.copy(net_list[0])
-    # c18 = copy.copy(net_list[1])
-    # c19 = copy.copy(net_list[2])
     
     #append all new nets
     net_list.append(top_cross)
@@ -257,9 +255,6 @@ while True:
     net_list.append(c14)
     net_list.append(c15)
     net_list.append(c16)
-    # net_list.append(c17)
-    # net_list.append(c18)
-    # net_list.append(c19)
 
     #Update the run number and clear history and name list
     generation_no += 1
