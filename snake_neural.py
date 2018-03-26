@@ -7,6 +7,9 @@ from operator import add
 
 mutation_rate = 25
 
+def nonlin(x):
+    return 1/(1+np.exp(-x))
+
 def set_move(snake):
     snake_head = snake.whole[0]
     move_list = []
@@ -80,7 +83,7 @@ def set_move(snake):
         sug_right = 1
         sug_hor = 1
     elif sug_x < 0:
-        sug_left = 1
+        sug_left = 1 
         sug_hor = -1
     sug_y = snake.apple[1] - snake_head[1]
     if sug_y > 0:
@@ -108,11 +111,11 @@ class Neuron():
     def __init__(self, layer,typology):
         self.dendrons = [] # List to hold all ingoing connections to the neuron
         self.output = 0.0 # Used to sum the input * the sigmoid
-        self.bias = 0.0
+        self.bias = 0
         if layer is None: # If the neuron is in the first layer, it will have no connections to former layer
             pass
         else:
-            #self.bias = random.uniform(-3,3)
+            self.bias = random.uniform(-2,2)
             for neuron in layer: # Only for neurons not in the first layer
                 con = Connection(neuron) 
                 self.dendrons.append(con)
@@ -152,28 +155,47 @@ class Network():
                     neuron.output += self.layers[lay_inst][inst].output * dDrons.weight
                     inst += 1
                     # print("["+str(lay_inst)+","+str(inst)+" "+str(neuron.output)+"]")
-                #neuron.output = 1.0/(1.0+np.exp(-neuron.output))
+                ##Sigmoid
                 #print(neuron.output)
+                neuron.output = nonlin(neuron.output)
+                #print(neuron.output)
+                ##Tanh
+                #neuron.output = np.tanh(neuron.output)
             lay_inst += 1
 
     def calculate_output(self,snake):
-        # Calculating X and Y
-        x_sum = self.layers[-1][0].output
-        y_sum = self.layers[-1][1].output
-        if abs(x_sum) > abs(y_sum):
-            if abs(x_sum) > 0.5:
-                #print("moving x: %s" %(x_sum))
-                if x_sum > 0 and snake.move != [-1, 0]:
-                    snake.move = [1,0]
-                if x_sum < 0 and snake.move != [1, 0]:
-                    snake.move = [-1,0]
-        if abs(x_sum) < abs(y_sum):
-            if abs(y_sum) > 0.5:
-                #print("moving y: %s" %(y_sum))
-                if y_sum > 0 and snake.move != [0, -1]:
-                    snake.move = [0,1]
-                if y_sum < 0 and snake.move != [0, 1]:
-                    snake.move = [0,-1]
+        # Calculating X and Y (old way)
+        # x_sum = self.layers[-1][0].output
+        # y_sum = self.layers[-1][1].output
+        # if abs(x_sum) > abs(y_sum):
+        #     if abs(x_sum) > 0.3:
+        #         #print("moving x: %s" %(x_sum))
+        #         if x_sum > 0 and snake.move != [-1, 0]:
+        #             snake.move = [1,0]
+        #         if x_sum < 0 and snake.move != [1, 0]:
+        #             snake.move = [-1,0]
+        # if abs(x_sum) < abs(y_sum):
+        #     if abs(y_sum) > 0.3:
+        #         #print("moving y: %s" %(y_sum))
+        #         if y_sum > 0 and snake.move != [0, -1]:
+        #             snake.move = [0,1]
+        #         if y_sum < 0 and snake.move != [0, 1]:
+        #             snake.move = [0,-1]
+
+        #Calculating up, down, left, right output new way
+        directions = [[0,-1], [0,1], [-1,0], [1,0]]
+        decision_list = []
+        i = 0
+        for y in directions:
+            decision_list.append([y,self.layers[-1][i].output])
+            i += 1
+        decision_list = sorted(decision_list,key=lambda x: x[1], reverse=True)
+        #print(decision_list)
+        decision = decision_list[0] #Creates for example [[0,1], 0.6]
+        reverse_decision = [i * -1 for i in decision[0]]
+        if decision[1] > 0.5 and snake.move != reverse_decision:
+            snake.move = decision[0]
+
 
 
     def cross_over(self,net1, net2, round_nr):
@@ -210,3 +232,18 @@ class Network():
                     #print("Layer: " + str(lay_inst)+" neuron: " + str(inst)+ " dendron: " + str(dInst) + " weight: " +str(dDrons.weight) )
                 inst += 1
             lay_inst += 1
+
+    def perform_back_propagation(self, input_list, output_list, real_output_list):
+        y = np.array(output_list)
+        last_layer = np.array(real_output_list)
+        last_layer_error = y - last_layer
+        #print(last_layer_error)
+        #Perform back propagation
+        last_layer_delta = last_layer_error*nonlin(last_layer)
+        # Perform the multiplication
+        inst = 0
+        for neuron in self.layers[-1]:
+            for dDrons in neuron.dendrons:
+                dDrons.weight = dDrons.weight + last_layer_delta[inst] * input_list[inst]
+            inst += 1
+        #print("here is the last layer delta %a" % (last_layer_delta))

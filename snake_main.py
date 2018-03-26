@@ -19,24 +19,24 @@ screen_height = 800
 # Set the tick number. Higher means faster snake.
 set_tick = 30
 # Screen size
-X = 30
-Y = 30
+X = 50
+Y = 50
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 40000
+max_point_goal = 20000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
 ## This is the geometry for the neural network: 
 # Keep first number to 8, last to 2. Otherwise, experiment!
-topology = [8,16,2]
+topology = [8,6,4]
 
 ###---Input End---###
-
 class Snake():
     def __init__(self, X, Y):
         self.X = X
         self.Y = Y
         self.point = 0
+        self.old_move = [1,0]
         self.move = [1,0]
         self.last = [3,4]
         self.current = [4,4]
@@ -83,7 +83,20 @@ class Snake():
         elif self.fitness_since_last_apple > 300:
             return(False)
         else:
-            return(True)      
+            return(True)
+
+    def check_survival(self, move):
+        x_cord = self.last[0] + move[0]
+        y_cord = self.last[1] + move[1]
+
+        if x_cord > X-1 or x_cord < 0:
+            return(False)
+        elif y_cord > Y-1 or y_cord < 0:
+            return(False)
+        elif [x_cord, y_cord] in self.whole[1:]:
+            return(False)
+        else:
+            return(True)  
 
 def render(snake, generation_no,run_no):
     if max_point > max_point_goal:
@@ -129,44 +142,77 @@ for i in range(0,10):
 while True:
     print("Generation %s with local max %s and average last ten %s." % (generation_no, round(local_max,2),round(average_score,2)))
     for net in net_list:
-        #print("Now running %s" % (net.name))
-        do_again = True
-        snake = Snake(X, Y)
-        while do_again is True:
-            render(snake, generation_no, run_no)
-            net.update_output(snake_neural.set_move(snake))
-            if max_point > max_point_goal:
-                print(snake_neural.set_move(snake))
-            net.calculate_output(snake)
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    #Escape will quit the program
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-            # #manual input
-            # for event in pygame.event.get():
-            #     if event.type == pygame.QUIT:
-            #         done = True
-            # #pygame.event.pump()
-            # for i in range(0, 30):
-            #     keys = pygame.key.get_pressed()
-            #     if keys[pygame.K_LEFT] and snake.move[0] == 0:
-            #         snake.move = [-1,0]
-            #     if keys[pygame.K_RIGHT] and snake.move[0] == 0:
-            #         snake.move = [1,0]
-            #     if keys[pygame.K_UP] and snake.move[1] == 0:
-            #         snake.move = [0,-1]
-            #     if keys[pygame.K_DOWN] and snake.move[1] == 0:
-            #         snake.move = [0,1]
-            snake.iterate()
-            net.fitness = snake.fitness + snake.point
-            net.fitness_history.insert(0,net.fitness)
-            if len(net.fitness_history) > 3:
-                net.fitness_history = net.fitness_history[0:3]
-            snake.check_apple()
-            do_again = snake.check_game_over()
-            if max_point > max_point_goal:
-                clock.tick(set_tick)
+        reset_count = 3
+        while reset_count > 0:
+            #print("Now running %s" % (net.name))
+            do_again = True
+            snake = Snake(X, Y)
+            while do_again is True:
+                render(snake, generation_no, run_no)
+                net.update_output(snake_neural.set_move(snake))
+                input_list = snake_neural.set_move(snake)
+                real_output_list = [net.layers[-1][i].output for i in [0,1,2,3]]
+                net.calculate_output(snake)
+                # Printing inputs and outputs if the max point is reached
+                if max_point > max_point_goal:
+                    print(input_list + real_output_list)
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        #Escape will quit the program
+                        if event.key == pygame.K_ESCAPE:
+                            pygame.quit()
+                # #manual input
+                # for event in pygame.event.get():
+                #     if event.type == pygame.QUIT:
+                #         done = True
+                # #pygame.event.pump()
+                # for i in range(0, 30):
+                #     keys = pygame.key.get_pressed()
+                #     if keys[pygame.K_LEFT] and snake.move[0] == 0:
+                #         snake.move = [-1,0]
+                #     if keys[pygame.K_RIGHT] and snake.move[0] == 0:
+                #         snake.move = [1,0]
+                #     if keys[pygame.K_UP] and snake.move[1] == 0:
+                #         snake.move = [0,-1]
+                #     if keys[pygame.K_DOWN] and snake.move[1] == 0:
+                #         snake.move = [0,1]
+                snake.check_apple()
+                snake.iterate()
+                net.fitness = snake.fitness + snake.point
+                net.fitness_history.insert(0,net.fitness)
+                if len(net.fitness_history) > 3:
+                    net.fitness_history = net.fitness_history[0:3]
+                do_again = snake.check_game_over()
+                if max_point > max_point_goal:
+                    clock.tick(set_tick)
+            # # Post-check moves that would have worked
+            # directions = [[0,-1], [0,1], [-1,0], [1,0]]
+            # directions.remove(snake.move)
+            # survive = False
+            # for i in range(0,2):
+            #     direction = directions.pop(random.randrange(len(directions)))
+            #     survive = snake.check_survival(direction)
+            #     if survive is False:
+            #         pass
+            #     else:
+            #         survival_move = direction
+            # If possible move found, do back propagation to the network
+            # if survive is True:
+            #     if direction == [0,-1]:
+            #         output_list = [1,0,0,0]
+            #     elif direction == [0,1]:
+            #         output_list = [0,1,0,0]
+            #     elif direction == [-1,0]:
+            #         output_list = [0,0,1,0]
+            #     elif direction == [1,0]:
+            #         output_list = [0,0,0,1]
+            #     # Perform backpropagation
+            #     net.perform_back_propagation(input_list, output_list, real_output_list)
+            #     print("A survival move would have been: ")
+            #     print(direction)
+            #     print(output_list)
+            # Reduce the reset count by one
+            reset_count = 0
         history.append(sum(net.fitness_history)/len(net.fitness_history))
         name_list.append(net.name)
         run_no += 1
