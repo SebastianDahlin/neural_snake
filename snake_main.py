@@ -14,21 +14,21 @@ import sys
 
 ###--- Inputs for the run ---###
 #Set the screen size
-screen_width = 1000
+screen_width = 1200
 screen_height = 800
 # Set the tick number. Higher means faster snake.
 set_tick = 30
 # Screen size
-X = 50
-Y = 50
+X = 30
+Y = 30
 # Set the point goal. Until it is reached the GUI will not show the snake. 
 # Set to 0 if you want to see it from start.
-max_point_goal = 20000
+max_point_goal = 10000
 # Set the chance of mutation. Must be an integer bigger than 0. Bigger number means more mutation.
 snake_neural.mutation_rate = 500
 ## This is the geometry for the neural network: 
 # Keep first number to 8, last to 2. Otherwise, experiment!
-topology = [8,6,4]
+topology = [8,16,4]
 
 ###---Input End---###
 class Snake():
@@ -149,9 +149,9 @@ while True:
             snake = Snake(X, Y)
             while do_again is True:
                 render(snake, generation_no, run_no)
-                net.update_output(snake_neural.set_move(snake))
+                net.forward_propagate(snake_neural.set_move(snake))
                 input_list = snake_neural.set_move(snake)
-                real_output_list = [net.layers[-1][i].output for i in [0,1,2,3]]
+                real_output_list = [net.layers[-1][i] for i in [0,1,2,3]]
                 net.calculate_output(snake)
                 # Printing inputs and outputs if the max point is reached
                 if max_point > max_point_goal:
@@ -185,33 +185,6 @@ while True:
                 do_again = snake.check_game_over()
                 if max_point > max_point_goal:
                     clock.tick(set_tick)
-            # # Post-check moves that would have worked
-            # directions = [[0,-1], [0,1], [-1,0], [1,0]]
-            # directions.remove(snake.move)
-            # survive = False
-            # for i in range(0,2):
-            #     direction = directions.pop(random.randrange(len(directions)))
-            #     survive = snake.check_survival(direction)
-            #     if survive is False:
-            #         pass
-            #     else:
-            #         survival_move = direction
-            # If possible move found, do back propagation to the network
-            # if survive is True:
-            #     if direction == [0,-1]:
-            #         output_list = [1,0,0,0]
-            #     elif direction == [0,1]:
-            #         output_list = [0,1,0,0]
-            #     elif direction == [-1,0]:
-            #         output_list = [0,0,1,0]
-            #     elif direction == [1,0]:
-            #         output_list = [0,0,0,1]
-            #     # Perform backpropagation
-            #     net.perform_back_propagation(input_list, output_list, real_output_list)
-            #     print("A survival move would have been: ")
-            #     print(direction)
-            #     print(output_list)
-            # Reduce the reset count by one
             reset_count = 0
         history.append(sum(net.fitness_history)/len(net.fitness_history))
         name_list.append(net.name)
